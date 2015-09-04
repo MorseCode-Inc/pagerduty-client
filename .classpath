@@ -5,10 +5,9 @@
 	<classpathentry kind="lib" path="build/lib/lib.json.jar"/>
 	<classpathentry kind="lib" path="build/lib/http_gateway.jar"/>
 	<classpathentry kind="lib" path="build/lib/nimsoft.jar"/>
-	<classpathentry kind="lib" path="build/lib/apache-http-commons/commons-codec-1.9.jar"/>
-	<classpathentry kind="lib" path="build/lib/apache-http-commons/httpclient-4.5.jar"/>
-	<classpathentry kind="lib" path="build/lib/apache-http-commons/httpcore-4.4.1.jar"/>
-	<classpathentry kind="lib" path="build/lib/apache-http-commons/httpmime-4.5.jar"/>
-	<classpathentry kind="lib" path="build/lib/pagerdutygtw.jar"/>
+	<classpathentry kind="lib" path="build/lib/commons-codec-1.9.jar"/>
+	<classpathentry kind="lib" path="build/lib/httpclient-4.5.jar"/>
+	<classpathentry kind="lib" path="build/lib/httpcore-4.4.1.jar"/>
+	<classpathentry kind="lib" path="build/lib/httpmime-4.5.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

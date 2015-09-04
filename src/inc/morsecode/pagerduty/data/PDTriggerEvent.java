@@ -6,7 +6,7 @@ import util.json.JsonObject;
 
 import inc.morsecode.NDS;
 import inc.morsecode.nas.UIMAlarmMessage;
-import inc.morsecode.pagerduty.Probe;
+//import inc.morsecode.pagerduty.Probe;
 
 public class PDTriggerEvent extends NDS {
 	
@@ -30,7 +30,8 @@ public class PDTriggerEvent extends NDS {
 		setIncidentKey(alarm.getAlarmSuppKey());
 		setDescription(alarm.getAlarmMessage());
 		setDetails(alarm.getBody());
-		setClient(Probe.PROBE_NAME +"/"+ Probe.PROBE_VERSION);
+		//setClient(Probe.PROBE_NAME +"/"+ Probe.PROBE_VERSION);
+		setClient("pagerdutygtw/1.0");
 		
 	}
 	
