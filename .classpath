@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="build/lib/httpclient-4.5.jar"/>
 	<classpathentry kind="lib" path="build/lib/httpcore-4.4.1.jar"/>
 	<classpathentry kind="lib" path="build/lib/httpmime-4.5.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/uim-probe-kit"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

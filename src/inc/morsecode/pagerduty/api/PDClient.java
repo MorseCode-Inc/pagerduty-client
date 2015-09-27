@@ -1,13 +1,17 @@
 package inc.morsecode.pagerduty.api;
 
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.StringTokenizer;
 
 
 import inc.morsecode.NDS;
 import inc.morsecode.etc.ArrayUtils;
+import inc.morsecode.pagerduty.PDException;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -15,18 +19,15 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 
-import util.json.JsonArray;
 import util.json.JsonObject;
 import util.json.ex.MalformedJsonException;
 import util.kits.JsonParser;
@@ -268,13 +269,38 @@ public class PDClient {
 			// System.out.println(code + " "+ message);
 			
 			HttpEntity entity = response.getEntity();
+			
 			if (entity != null) {
 				ByteArrayOutputStream baos= new ByteArrayOutputStream();
-				entity.writeTo(baos);
 				
+				byte[] buffer= new byte[2048];
+				
+				//entity.writeTo(baos);
+				InputStream content = entity.getContent();
+				while (content.available() > 0) {
+					int k= content.read(buffer);
+					if (k <= 0) { break; }
+					baos.write(buffer, 0, k);
+				}
+				
+				content.close();
 				baos.close();
 				String string = baos.toString();
-				JsonObject json= JsonParser.parse(string);
+				
+				JsonObject json= null;
+				
+				try {
+					json= JsonParser.parse(string);
+				} catch (MalformedJsonException mfx) {
+					if (string.startsWith("Responses from PD were:") && string.contains("\n")) {
+						StringTokenizer tokenizer= new StringTokenizer(string, "\n");
+						tokenizer.nextToken();
+						string= tokenizer.nextToken();
+						string= string.replaceAll(".* content\\(", "");
+						string= string.replaceAll("\\)*$", "");
+						json= JsonParser.parse(string);
+					}
+				}
 				
 				// look for errors back from the PagerDuty API
 				/*
@@ -311,12 +337,12 @@ public class PDClient {
 							// we know EXACTLY what this error is, and we should handle it gracefully.
 							// throw new PagerDutyApiException(error, errorCode, errorMessage);
 							errorMessage+= " Check your user account information [subdomain="+ getSubdomain() +" token="+ getApiToken() +"]";
-							throw new RuntimeException("ERR("+ errorCode +"): "+ errorMessage);
+							throw new PDException("ERR("+ errorCode +"): "+ errorMessage);
 						}
 						break;
 						
 					default:
-						throw new RuntimeException("ERR("+ errorCode +"): "+ errorMessage);
+						throw new PDException("ERR("+ errorCode +"): "+ errorMessage);
 					
 					}
 				}
