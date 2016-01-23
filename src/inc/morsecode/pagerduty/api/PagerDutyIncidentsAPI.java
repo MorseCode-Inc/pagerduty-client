@@ -140,6 +140,61 @@ public class PagerDutyIncidentsAPI {
 		return incidents;
 	}
 	
+
+	public IncidentList getIncidents(NDS filter) throws IOException, MalformedJsonException {
+		String uri = "/api/v1/incidents";
+		
+		NDS params= new NDS("params");
+		
+		for (String key : filter.keys()) {
+			params.set(key, filter.get(key));
+		}
+		
+		JsonObject data= client.call(GET, uri, null, params);
+		int total= data.get("total", 0);
+		int limit= data.get("limit", 0);
+		
+		JsonArray incidents= data.get("incidents", new JsonArray());
+		
+		ListResult<PDIncident> found= new ListResult<PDIncident>(Math.min(total, limit));
+		
+		for(JsonValue i : incidents) {
+			JsonObject incident= (JsonObject)i;
+			found.add(new PDIncident(incident));
+		}
+		
+		return new IncidentList(found);
+	}
+	
+	public PDIncident getIncidentByKey(String key) throws IOException, MalformedJsonException {
+		// Show detailed information about an incident.
+		// Accepts either an incident id, or an incident number.
+		// API page:
+		// https://developer.pagerduty.com/documentation/rest/incidents/show
+		// resource URL:
+		// GET https://<subdomain>.pagerduty.com/api/v1/incidents/:id
+		String uri = "/api/v1/incidents";
+		
+		NDS params= new NDS("params");
+		params.set("incident_key", key);
+		params.set("limit", 1);
+		JsonObject data= client.call(GET, uri, null, params);
+		
+		int total= data.get("total", 0);
+		int limit= data.get("limit", 0);
+		
+		JsonArray incidents= data.get("incidents", new JsonArray());
+		
+		ListResult<PDIncident> found= new ListResult<PDIncident>(Math.min(total, limit));
+		
+		for(JsonValue i : incidents) {
+			JsonObject incident= (JsonObject)i;
+			found.add(new PDIncident(incident));
+		}
+		
+		IncidentList incidentList = new IncidentList(found);
+		return incidentList.getByKey(key);
+	}
 	
 	public PDIncident getIncident(String id) throws IOException, MalformedJsonException {
 		// Show detailed information about an incident.
@@ -319,7 +374,9 @@ public class PagerDutyIncidentsAPI {
 		return resp;
 	}
 
-	public void update(IncidentUpdateParameters params) {
+	public void update(IncidentUpdateParameters params) throws IOException, MalformedJsonException {
+		
+		
 		
 	}
 }

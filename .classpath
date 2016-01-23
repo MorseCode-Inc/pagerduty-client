@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="build/lib/lib.json.jar"/>
-	<classpathentry kind="lib" path="build/lib/http_gateway.jar"/>
 	<classpathentry kind="lib" path="build/lib/nimsoft.jar"/>
 	<classpathentry kind="lib" path="build/lib/commons-codec-1.9.jar"/>
 	<classpathentry kind="lib" path="build/lib/httpclient-4.5.jar"/>

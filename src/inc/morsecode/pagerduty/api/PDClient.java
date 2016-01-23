@@ -136,7 +136,9 @@ public class PDClient {
     		String delim= "?";
     		for (String key : params.keys()) {
     			try {
-					uri+= delim + URLEncoder.encode(key, "UTF-8") +"="+ URLEncoder.encode(params.get(key), "UTF-8");
+					String string = params.get(key);
+					if ("".equals(string) || null == string) { continue; }
+					uri+= delim + URLEncoder.encode(key, "UTF-8") +"="+ URLEncoder.encode(string, "UTF-8");
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				}
@@ -285,70 +287,88 @@ public class PDClient {
 				
 				content.close();
 				baos.close();
-				String string = baos.toString();
+				String string = baos.toString().trim();
 				
-				JsonObject json= null;
-				
-				try {
-					json= JsonParser.parse(string);
-				} catch (MalformedJsonException mfx) {
-					if (string.startsWith("Responses from PD were:") && string.contains("\n")) {
-						StringTokenizer tokenizer= new StringTokenizer(string, "\n");
-						tokenizer.nextToken();
-						string= tokenizer.nextToken();
-						string= string.replaceAll(".* content\\(", "");
-						string= string.replaceAll("\\)*$", "");
+				if ("".equals(string)) {
+					JsonObject json= new JsonObject();
+					
+					json.set("status", code);
+					json.set("message", message);
+					
+					return json;
+					
+				} else {
+					JsonObject json= null;
+					
+					try {
 						json= JsonParser.parse(string);
-					}
-				}
-				
-				// look for errors back from the PagerDuty API
-				/*
-				 * HTTPClient	GET https://morsecode-incorporated.pagerduty.com/api/v1/incidents/1 HTTP/1.1
-					HTTPClient	Authorization: Token token=PnKQyzNjQEjsRfodeTwa
-					Incident ID: 1
-					Incident Service Information:
-					<service>
-					</service>
-					
-					Incident JSON:
-					{
-	 					"error":{
-	 						"message":"Your account is expired and cannot use the API."
-	 						, "code":2012
-	 					}
-					}
-				 */
-				
-				
-				JsonObject error= json.getObject("error", null);
-				
-				if (error != null) {
-					// there is an error object in the response data
-					int errorCode= error.get("code", 0);
-					String errorMessage= error.get("message", "no message");
-					
-					switch (errorCode) {
-					case 0:
-						// probably not an error... 
-						break;
-					case 2012:
-						if ("Your account is expired and cannot use the API.".equalsIgnoreCase(errorMessage)) {
-							// we know EXACTLY what this error is, and we should handle it gracefully.
-							// throw new PagerDutyApiException(error, errorCode, errorMessage);
-							errorMessage+= " Check your user account information [subdomain="+ getSubdomain() +" token="+ getApiToken() +"]";
-							throw new PDException("ERR("+ errorCode +"): "+ errorMessage);
-						}
-						break;
+					} catch (MalformedJsonException mfx) {
 						
-					default:
-						throw new PDException("ERR("+ errorCode +"): "+ errorMessage);
-					
+						if (string.startsWith("Responses from PD were:") && string.contains("\n")) {
+							StringTokenizer tokenizer= new StringTokenizer(string, "\n");
+							tokenizer.nextToken();
+							string= tokenizer.nextToken();
+							string= string.replaceAll(".* content\\(", "");
+							string= string.replaceAll("\\)*$", "");
+							json= JsonParser.parse(string);
+						} else {
+							System.err.println("Client Error, Malformed JSON Response from server: "+ mfx.getMessage() +"\n"+ string);
+							// throw new RuntimeException("Client Error, Malformed JSON Response from server: "+ mfx.getMessage() +"\n"+ string);
+							throw mfx;
+						}
 					}
+					
+					// look for errors back from the PagerDuty API
+					/*
+					 * HTTPClient	GET https://morsecode-incorporated.pagerduty.com/api/v1/incidents/1 HTTP/1.1
+						HTTPClient	Authorization: Token token=PnKQyzNjQEjsRfodeTwa
+						Incident ID: 1
+						Incident Service Information:
+						<service>
+						</service>
+						
+						Incident JSON:
+						{
+		 					"error":{
+		 						"message":"Your account is expired and cannot use the API."
+		 						, "code":2012
+		 					}
+						}
+					 */
+					
+					if (json == null) {
+						throw new RuntimeException("Client Error, Malformed JSON Response from: "+ request +"");
+					}
+					
+					JsonObject error= json.getObject("error", null);
+					
+					if (error != null) {
+						// there is an error object in the response data
+						int errorCode= error.get("code", 0);
+						String errorMessage= error.get("message", "no message");
+						
+						switch (errorCode) {
+						case 0:
+							// probably not an error... 
+							break;
+						case 2012:
+							if ("Your account is expired and cannot use the API.".equalsIgnoreCase(errorMessage)) {
+								// we know EXACTLY what this error is, and we should handle it gracefully.
+								// throw new PagerDutyApiException(error, errorCode, errorMessage);
+								errorMessage+= " Check your user account information [subdomain="+ getSubdomain() +" token="+ getApiToken() +"]";
+								throw new PDException("ERR("+ errorCode +"): "+ errorMessage);
+							}
+							break;
+							
+						default:
+							throw new PDException("ERR("+ errorCode +"): "+ errorMessage);
+						
+						}
+					}
+					
+					
+					return json;
 				}
-				
-				
-				return json;
 			}
 		}
 		
