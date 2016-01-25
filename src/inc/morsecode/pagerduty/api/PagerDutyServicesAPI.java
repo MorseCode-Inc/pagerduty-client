@@ -55,19 +55,18 @@ public class PagerDutyServicesAPI {
 
 	public List<PDService> listServices() throws IOException, MalformedJsonException {
 		
-		ListResult<PDService> all= listServices(0, 1);
+		ListResult<PDService> all= listServices(0, 49);
 		
 		int total= all.getCount();
 		
 		if (total < 50) {
-			// just get all 50 in one transaction
-			return listServices(0, total);
+			return all;
 		} else {
 			
 			// break requests into chunks
 			int chunksize= 25;
 			
-			for (int i= 0; i < total; i+= chunksize) {
+			for (int i= 49; i < total; i+= chunksize) {
 				all.addAll(listServices(i, chunksize));
 			}
 			

@@ -55,13 +55,12 @@ public class PagerDutyUsersAPI {
 
 	public List<PDUser> listUsers() throws IOException, MalformedJsonException {
 		
-		ListResult<PDUser> all= listUsers(0, 1);
+		ListResult<PDUser> all= listUsers(0, 49);
 		
 		int total= all.getCount();
 		
 		if (total < 50) {
-			// just get all 50 in one transaction
-			return listUsers(0, total);
+			return all;
 		} else {
 			
 			// break requests into chunks
@@ -83,7 +82,7 @@ public class PagerDutyUsersAPI {
 		params.set("offset", offset);
 		params.set("limit", limit);
 		
-		String url= client.urls().getServiceList(client);
+		String url= client.urls().getUserList(client);
 		
 		JsonObject data= client.call(GET, url, null, params);
 		
@@ -92,8 +91,8 @@ public class PagerDutyUsersAPI {
 		
 		for(JsonValue obj : array) {
 			if (obj instanceof JsonObject) {
-				PDUser service= new PDUser(((JsonObject) obj).get("name", "invalid"), ((JsonObject) obj));
-				users.add(service);
+				PDUser user= new PDUser(((JsonObject) obj).get("name", "invalid"), ((JsonObject) obj));
+				users.add(user);
 			}
 		}
 		

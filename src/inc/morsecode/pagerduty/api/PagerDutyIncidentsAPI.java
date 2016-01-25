@@ -173,7 +173,8 @@ public class PagerDutyIncidentsAPI {
 		// https://developer.pagerduty.com/documentation/rest/incidents/show
 		// resource URL:
 		// GET https://<subdomain>.pagerduty.com/api/v1/incidents/:id
-		String uri = "/api/v1/incidents";
+		
+		String uri= client.urls().getIncidentList(client);
 		
 		NDS params= new NDS("params");
 		params.set("incident_key", key);
@@ -292,32 +293,19 @@ public class PagerDutyIncidentsAPI {
 	 */
 	public boolean resolve(PDIncident incident, PDUser user) throws IOException, MalformedJsonException {
 		
-		String uri = "/api/v1/incidents";
+		String url= client.urls().getIncidentResolve(client, incident);
+		// String uri = "/api/v1/incidents";
 		// PUT https://<subdomain>.pagerduty.com/api/v1/incidents/:id/resolve
 		NDS params= new NDS();
 		params.set("requester_id", user.getId());
-		JsonObject data= client.call(PUT, uri + "/"+ incident.getId() +"/resolve", null, params);
+		//JsonObject data= client.call(PUT, uri + "/"+ incident.getId() +"/resolve", null, params);
+		JsonObject data= client.call(PUT, url, null, params);
 		
 		System.out.println(data);
 		
 		return true;
 	}
 	
-	/*
-	public JsonObject triggerNewIncident(PDService service, JsonArray contexts, UIMAlarmMessage alarm) throws IOException, MalformedJsonException {
-		JsonObject json= buildPdTrigger(service.getServiceKey(), alarm, contexts);
-		
-		
-		// String uri= "/"+ service.getServiceKey() +"/events/enqueue";
-		String uri= service.getId() +"/events/enqueue";
-		// HttpRequest request= client.put("/incidents", json);
-		// HttpRequest request= client.buildPostRequest( , json, null);
-		
-		JsonObject resp= client.call("post", uri, json, null);
-		// HttpResponse resp= client.execute((HttpUriRequest)request);
-		return resp;
-	}
-	*/
 
 
 	public static JsonObject buildPdTrigger(String serviceKey, UIMAlarmMessage alarm, JsonArray contexts) {
@@ -353,7 +341,7 @@ public class PagerDutyIncidentsAPI {
 	}
 	
 
-	public JsonObject send(PDTriggerEvent event) throws IOException, MalformedJsonException {
+	public JsonObject fire(PDTriggerEvent event) throws IOException, MalformedJsonException {
 		
 		
 		// String uri= "/"+ service.getServiceKey() +"/events/enqueue";

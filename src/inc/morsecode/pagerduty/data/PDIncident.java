@@ -140,5 +140,10 @@ public class PDIncident extends NDS {
 		return this.get("id");
 	}
 
+	public boolean isResolved() {
+		String status= getStatus();
+		return false;
+	}
+
 	
 }

@@ -41,40 +41,34 @@ public class PDClient {
 	
 	private PagerDutyIncidentsAPI incidents;
 	private PagerDutyServicesAPI servicesApi;
-	private PDServiceUrls urls;
-	private String userid;
+	private PDEndpoints urls;
+	private boolean debugging= false;
 	
-	public PDClient(String subdomain, String apiKey, PDServiceUrls urls, String userid) {
+	public PDClient(String subdomain, String apiKey, PDEndpoints urls, String userid) {
 		this(subdomain, "pagerduty.com", apiKey, urls, userid);
 	}
 	
-	public PDClient(String subdomain, String domain, String apiKey, PDServiceUrls urls, String userid) {
+	public PDClient(String subdomain, String domain, String apiKey, PDEndpoints urls, String userid) {
 		this.services= data.seek("services", true);
 		this.urls= urls;
 		data.set("subdomain", subdomain);
 		data.set("domain", domain);
 		data.set("auth/api_key", apiKey);
-		data.set("auth/userid", userid);
+		data.set("auth/user_id", userid);
 		
 		this.restlet= HttpClients.createDefault();
 		
 	}
 
-	public PDServiceUrls urls() {
+	public PDEndpoints urls() {
 		return urls;
 	}
 	
-	public String getSubdomain() {
-		return data.get("subdomain", "events");
-	}
+	public String getSubdomain() { return data.get("subdomain", "events"); }
 	
-	public String getUserid() {
-		return data.get("auth/userid"); 
-	}
+	public String getUserid() { return data.get("auth/user_id");  }
 	
-	public String getDomain() {
-		return getSubdomain() +"."+ getTopLevelDomain();
-	}
+	public String getDomain() { return getSubdomain() +"."+ getTopLevelDomain(); }
 	
 	public String getTopLevelDomain() {
 		return data.get("domain", "pagerduty.com");
@@ -181,11 +175,10 @@ public class PDClient {
 		}
     	
     	if (auth) {
-		request.setHeader("Authorization", "Token token="+ getApiToken());
+    		request.setHeader("Authorization", "Token token="+ getApiToken());
     	}
 		
 		
-		boolean debugging= false;
 		if (debugging) {
 			for (Header header : request.getAllHeaders()) {
 				System.out.println(header);
@@ -211,19 +204,17 @@ public class PDClient {
             	HttpResponse response= restlet.execute(request); // , responseHandler);
             	return response;
             } catch (ClientProtocolException x) {
-            	System.out.println(x.getMessage() +" "+ x.getCause());
+            	System.out.println("Client Error: "+ x.getMessage() +" "+ x.getCause());
             }
     		
     	} catch (IllegalArgumentException iax) {
-    		System.err.println("ILLEGAL ARGUMENT:\n"+ iax);
+    		System.err.println("ERROR Illegal Argument:\n"+ iax);
     	} catch (NullPointerException npx) {
-    		System.err.println("NULL:\n"+ npx);
+    		System.err.println("ERROR NULL Reference:\n"+ npx);
     	} catch (Throwable error) {
     		System.err.println("ERROR:\n"+ error);
     		error.printStackTrace();
-    		
     	} finally {
-    		
     		System.out.flush();
     		System.err.flush();
     	}
@@ -273,21 +264,7 @@ public class PDClient {
 			HttpEntity entity = response.getEntity();
 			
 			if (entity != null) {
-				ByteArrayOutputStream baos= new ByteArrayOutputStream();
-				
-				byte[] buffer= new byte[2048];
-				
-				//entity.writeTo(baos);
-				InputStream content = entity.getContent();
-				while (content.available() > 0) {
-					int k= content.read(buffer);
-					if (k <= 0) { break; }
-					baos.write(buffer, 0, k);
-				}
-				
-				content.close();
-				baos.close();
-				String string = baos.toString().trim();
+				String string= read(entity);
 				
 				if ("".equals(string)) {
 					JsonObject json= new JsonObject();
@@ -312,7 +289,7 @@ public class PDClient {
 							string= string.replaceAll("\\)*$", "");
 							json= JsonParser.parse(string);
 						} else {
-							System.err.println("Client Error, Malformed JSON Response from server: "+ mfx.getMessage() +"\n"+ string);
+							System.err.println("Client Error, Malformed JSON Response from PagerDuty server: "+ mfx.getMessage() +"\n"+ string);
 							// throw new RuntimeException("Client Error, Malformed JSON Response from server: "+ mfx.getMessage() +"\n"+ string);
 							throw mfx;
 						}
@@ -356,9 +333,8 @@ public class PDClient {
 								// we know EXACTLY what this error is, and we should handle it gracefully.
 								// throw new PagerDutyApiException(error, errorCode, errorMessage);
 								errorMessage+= " Check your user account information [subdomain="+ getSubdomain() +" token="+ getApiToken() +"]";
-								throw new PDException("ERR("+ errorCode +"): "+ errorMessage);
 							}
-							break;
+							throw new PDException("ERR("+ errorCode +"): "+ errorMessage);
 							
 						default:
 							throw new PDException("ERR("+ errorCode +"): "+ errorMessage);
@@ -374,30 +350,26 @@ public class PDClient {
 		
 		return null;
 	}
-	
-	
 
-
-
-
-	public static JsonObject nimalarm() {
-		JsonObject alarmData= new JsonObject();
+	public String read(HttpEntity entity) throws IOException {
+		ByteArrayOutputStream baos= new ByteArrayOutputStream();
 		
-		alarmData.set("nimid", "11233333ABAB");
-		alarmData.set("robot", "robot-name");
-		alarmData.set("source", "alarm-source");
-		alarmData.set("subsystem", "2.11.1");
-		alarmData.set("origin", "origin");
-		alarmData.set("assigned_to", "assigned_to");
-		alarmData.set("assigned_by", "assigned_by");
-		alarmData.set("assigned_ts", "2015-01-01 14:44:00");
-		alarmData.set("nimts", "2015-01-01 14:44:00");
-		alarmData.set("arrival_ts", "2015-01-01 14:44:00");
-		alarmData.set("last_received_ts", "2015-01-01 14:44:00");
-		alarmData.set("origin_ts", "2015-01-01 14:44:00");
-		return alarmData;
+		byte[] buffer= new byte[2048];
+		
+		//entity.writeTo(baos);
+		InputStream content = entity.getContent();
+		while (content.available() > 0) {
+			int k= content.read(buffer);
+			if (k <= 0) { break; }
+			baos.write(buffer, 0, k);
+		}
+		
+		content.close();
+		baos.close();
+		String string = baos.toString().trim();
+		return string;
 	}
-
+	
 	public PDClient newInstance() {
 		return new PDClient(getSubdomain(), getTopLevelDomain(), getApiToken(), urls, getUserid());
 	}
@@ -416,5 +388,9 @@ public class PDClient {
 		return this.incidents;
 	}
 	
+	
+	public void enableDebugging() { this.setDebugging(true); }
+	public void disableDebugging() { this.setDebugging(false); }
+	public void setDebugging(boolean debugging) { this.debugging = debugging; }
 	
 }

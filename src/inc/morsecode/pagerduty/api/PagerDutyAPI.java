@@ -16,7 +16,7 @@ public class PagerDutyAPI {
 
 	private PDClient client;
 	
-	public PagerDutyAPI(String subdomain, String apiKey, PDServiceUrls urls, String userid) {
+	public PagerDutyAPI(String subdomain, String apiKey, PDEndpoints urls, String userid) {
 		this.client= new PDClient(subdomain, apiKey, urls, userid);
 	}
 	

@@ -7,6 +7,7 @@ import util.StrUtils;
 import util.json.JsonObject;
 import inc.morsecode.NDS;
 import inc.morsecode.pagerduty.data.PDIncident;
+import inc.morsecode.pagerduty.data.PDService;
 import inc.morsecode.pagerduty.data.PDTriggerEvent;
 import inc.morsecode.pagerduty.data.PDUser;
 
@@ -47,23 +48,18 @@ import inc.morsecode.pagerduty.data.PDUser;
  * </pre></br>
  * =--------------------------------=
  */
-public class PDServiceUrls extends NDS {
+public class PDEndpoints extends NDS {
 
-	private static final String SERVICE_PUT_RESOLVE = "service/put:resolve";
-	private static final String SERVICE_GET_COUNT = "service/get:count";
-	private static final String SERVICE_GET_INCIDENT = "service/get:incident";
-	private static final String SERVICE_POST_CREATE = "service/post:create";
-	private static final String SERVICE_API = "service/api";
 	
 	private HashMap<String, String> cache= new HashMap<String, String>();
 	
-	public PDServiceUrls() { super("service_urls"); }
-	public PDServiceUrls(String name) { super(name); }
-	public PDServiceUrls(Map<String, Object> map) { super(map); }
-	public PDServiceUrls(NDS nds) { super(nds); }
-	public PDServiceUrls(String name, Map<String, Object> map) { super(name, map); }
-	public PDServiceUrls(NDS nds, boolean reference) { super(nds, reference); }
-	public PDServiceUrls(String name, JsonObject json) { super(name, json); }
+	public PDEndpoints() { super("service_urls"); }
+	public PDEndpoints(String name) { super(name); }
+	public PDEndpoints(Map<String, Object> map) { super(map); }
+	public PDEndpoints(NDS nds) { super(nds); }
+	public PDEndpoints(String name, Map<String, Object> map) { super(name, map); }
+	public PDEndpoints(NDS nds, boolean reference) { super(nds, reference); }
+	public PDEndpoints(String name, JsonObject json) { super(name, json); }
 
 	
 	public String getEventTriggerTemplate() {
@@ -79,21 +75,25 @@ public class PDServiceUrls extends NDS {
 		return url;
 	}
 	
-	/**
-	 * 
-	 * https://$domain/api/v1/incidents
-	 * @return
-	 */
+	/*
+	public String getServiceApi(PDClient client) { 
+		String url= get(SERVICE_API, "https://$domain/api/v1/services");
+		return prepareUrl(client, url);
+	}
+	*/
 	
-	public String getServiceApi() { return get(SERVICE_API, "https://$domain/api/v1/services"); }
-	public String getServiceCreate() { return get(SERVICE_POST_CREATE, "http://$domain/api/v1/services"); }
-	public String getService() { return get(SERVICE_GET_INCIDENT, "http://$domain/api/v1/services/$incident.id"); }
-	public String getServiceCount() { return get(SERVICE_GET_COUNT, "http://$domain/api/v1/services/count"); }
-	public String getServiceResolve() { return get(SERVICE_PUT_RESOLVE, "/api/v1/$incident.id/resolve"); }
-	public String getServiceUpdate() { return get("service/put:update", "http://$domain/api/v1/services"); }
-	public String getServiceAck() { return get("service/put:ack", "/api/v1/$incident.id/acknowledge"); }
-	public String getServiceReassign() { return get("service/put:reassign", "/api/v1/$incident.id/reassign"); }
-	public String getServiceSnooze() { return get("service/put:snooze", "/api/v1/$incident.id/snooze"); }
+	public String getServiceCreate(PDClient client) { 
+		return prepareUrl(client, get("service/post:create", "http://$domain/api/v1/services"));
+	}
+	
+	public String getService(PDClient client) {
+		return prepareUrl(client, get("service/get:service", "http://$domain/api/v1/services/$incident.id"));
+	}
+	
+	public String getServiceUpdate(PDClient client, PDService service) { 
+		return prepareUrl(client, service, get("service/put:update", "http://$domain/api/v1/services/$service.id"), "service"); 
+	}
+	
 	
 	public String getServiceList(PDClient client) {
 		String url= get("service/get:list", "https://$domain/api/v1/services");
@@ -111,16 +111,30 @@ public class PDServiceUrls extends NDS {
 		return url;
 	}
 	
-	public String getIncidentCount() { return get("incident/get:count", "http://$domain/api/v1/incidents/count"); }
-	public String getIncidentResolve() { return get("incident/put:resolve", "/api/v1/$incident.id/resolve"); }
+	public String getIncidentCount(PDClient client) { 
+		String url= get("incident/get:count", "http://$domain/api/v1/incidents/count"); 
+		return prepareUrl(client, url);
+	}
+	
+	public String getIncidentResolve(PDClient client, PDIncident incident) { 
+		String url= get("incident/put:resolve", "/api/v1/$incident.id/resolve"); 
+		return prepareUrl(client, incident, url, "incident"); 
+	}
 	
 	public String getIncidentUpdate(PDClient client) { 
 		String url= get("incident/put:update", "/api/v1/incidents"); 
 		return prepareUrl(client, url);
 	}
 	
-	public String getIncidentAck() { return get("incident/put:ack", "/api/v1/$incident.id/acknowledge"); }
-	public String getIncidentReassign() { return get("incident/put:reassign", "/api/v1/$incident.id/reassign"); }
+	public String getIncidentAck(PDClient client, PDIncident incident) { 
+		String url= get("incident/put:ack", "/api/v1/$incident.id/acknowledge");
+		return prepareUrl(client, incident, url, "incident");
+	}
+	
+	public String getIncidentReassign(PDClient client, PDIncident incident) { 
+		String url= get("incident/put:reassign", "/api/v1/$incident.id/reassign");
+		return prepareUrl(client, incident, url, "incident");
+	}
 	
 	public String getIncidentSnooze(PDClient client, PDIncident incident) { 
 		String url= get("incident/put:snooze", "/api/v1/$incident.id/snooze");
@@ -128,13 +142,10 @@ public class PDServiceUrls extends NDS {
 		return url;
 	}
 	
-	// public String getIncidentList() { return get("incident/get:list", "http://$domain/api/v1/incidents"); }
 	public String getIncidentList(PDClient client) { 
 		String url= get("incident/get:list", "/api/v1/incidents");
 		return prepareUrl(client, url);
 	}
-	
-	// protected String getIncident() { return get("incident/get:incident", "http://$domain/api/v1/incidents/$incident.id"); }
 	
 	public String getIncident(PDClient client, String incidentId) { 
 		return getIncident(client, new PDIncident(incidentId));

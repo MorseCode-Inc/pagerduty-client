@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="build/lib/lib.json.jar"/>
 	<classpathentry kind="lib" path="build/lib/nimsoft.jar"/>
 	<classpathentry kind="lib" path="build/lib/commons-codec-1.9.jar"/>
 	<classpathentry kind="lib" path="build/lib/httpclient-4.5.jar"/>
 	<classpathentry kind="lib" path="build/lib/httpcore-4.4.1.jar"/>
 	<classpathentry kind="lib" path="build/lib/httpmime-4.5.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/uim-probe-kit"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/lib.json"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
