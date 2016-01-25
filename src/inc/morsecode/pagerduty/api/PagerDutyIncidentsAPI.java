@@ -342,23 +342,9 @@ public class PagerDutyIncidentsAPI {
 	
 
 	public JsonObject fire(PDTriggerEvent event) throws IOException, MalformedJsonException {
-		
-		
-		// String uri= "/"+ service.getServiceKey() +"/events/enqueue";
 		String uri= event.getService().getServiceKey() +"/events/enqueue";
-		
 		uri= client.urls().getEventTrigger(client, event);
-		
-		// HttpRequest request= client.put("/incidents", json);
-		// HttpRequest request= client.buildPostRequest( , json, null);
-		//uri= "https://events.pagerduty.com/generic/2010-04-15/create_event.json";
-		//uri= "https://redonkulizer-toy.herokuapp.com/redonkulize/passthrough/"+ event.getServiceKey();
-		//uri= triggerUrl(event);
-		System.out.println("SEND TRIGGER:\n"+ event);
-		
 		JsonObject resp= client.call("post", uri, event.toJson(), null, false);
-		// HttpResponse resp= client.execute((HttpUriRequest)request);
-		System.out.println("RESPONSE: \n"+ resp);
 		return resp;
 	}
 

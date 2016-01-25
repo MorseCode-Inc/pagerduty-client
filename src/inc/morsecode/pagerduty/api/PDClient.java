@@ -178,17 +178,6 @@ public class PDClient {
     		request.setHeader("Authorization", "Token token="+ getApiToken());
     	}
 		
-		
-		if (debugging) {
-			for (Header header : request.getAllHeaders()) {
-				System.out.println(header);
-			}
-			
-			if (entity != null) {
-				System.out.println(data);
-			}
-		}
-    	
     	return request;
     }
 
@@ -247,10 +236,6 @@ public class PDClient {
 			System.out.println("HTTPClient\t"+ header);
 		}
 		
-		if (data != null) { 
-			System.out.println("\n"+ ArrayUtils.prefixMultiline(data.toString(), "\t"));
-		}
-		
 		// send it
 		HttpResponse response= execute((HttpUriRequest)request);
 		
@@ -259,7 +244,7 @@ public class PDClient {
 			String message= response.getStatusLine().getReasonPhrase();
 			int code= response.getStatusLine().getStatusCode();
 			
-			// System.out.println(code + " "+ message);
+			System.out.println(code + " "+ message);
 			
 			HttpEntity entity = response.getEntity();
 			
@@ -289,13 +274,13 @@ public class PDClient {
 							string= string.replaceAll("\\)*$", "");
 							json= JsonParser.parse(string);
 						} else {
-							System.err.println("Client Error, Malformed JSON Response from PagerDuty server: "+ mfx.getMessage() +"\n"+ string);
+							System.err.println("Client Error, Malformed JSON Response from PagerDuty server: "+ mfx.getMessage());
+							System.err.println(string);
 							// throw new RuntimeException("Client Error, Malformed JSON Response from server: "+ mfx.getMessage() +"\n"+ string);
 							throw mfx;
 						}
 					}
 					
-					// look for errors back from the PagerDuty API
 					/*
 					 * HTTPClient	GET https://morsecode-incorporated.pagerduty.com/api/v1/incidents/1 HTTP/1.1
 						HTTPClient	Authorization: Token token=PnKQyzNjQEjsRfodeTwa
