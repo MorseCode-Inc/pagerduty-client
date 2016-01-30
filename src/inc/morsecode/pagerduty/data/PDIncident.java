@@ -142,7 +142,13 @@ public class PDIncident extends NDS {
 
 	public boolean isResolved() {
 		String status= getStatus();
-		return false;
+		return "resolved".equals(status);
+	}
+	
+	
+	public PDUser getResolvedBy() {
+		if (!isResolved()) { return null; }
+		return new PDUser(seek("resolved_by_user"));
 	}
 
 	
