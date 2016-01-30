@@ -252,12 +252,6 @@ public class PagerDutyIncidentsAPI {
 		// the JSON that is in the data variable represents a single incident
 		PDIncident incident= new PDIncident(data);
 		
-		String incidentNumber = incident.get("id");
-		
-		System.out.println("Incident ID: "+ id);
-		System.out.println("Incident Service Information:\n"+ incident.getService());
-		System.out.println("Incident JSON:\n"+ data.toString());
-		
 		return incident;
 	}
 	
@@ -301,7 +295,7 @@ public class PagerDutyIncidentsAPI {
 		//JsonObject data= client.call(PUT, uri + "/"+ incident.getId() +"/resolve", null, params);
 		JsonObject data= client.call(PUT, url, null, params);
 		
-		System.out.println(data);
+		// System.out.println(data);
 		
 		return true;
 	}

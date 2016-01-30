@@ -109,8 +109,8 @@ public class PagerDutyUsersAPI {
 		
 		
 		if (userInfo == null) {
-			System.err.println("Error getting User "+ id);
-			System.err.println(json);
+			System.err.println("Error getting User Information for user="+ id);
+			// System.err.println(json);
 			return null;
 		}
 		

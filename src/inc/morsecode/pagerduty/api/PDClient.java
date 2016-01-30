@@ -41,6 +41,7 @@ public class PDClient {
 	
 	private PagerDutyIncidentsAPI incidents;
 	private PagerDutyServicesAPI servicesApi;
+	private PagerDutyUsersAPI usersApi;
 	private PDEndpoints urls;
 	private boolean debugging= false;
 	
@@ -359,6 +360,13 @@ public class PDClient {
 		return new PDClient(getSubdomain(), getTopLevelDomain(), getApiToken(), urls, getUserid());
 	}
 
+	public PagerDutyUsersAPI users() {
+		if (this.usersApi == null) {
+			this.usersApi= new PagerDutyUsersAPI(this);
+		}
+		return this.usersApi;
+	}
+	
 	public PagerDutyServicesAPI services() {
 		if (this.servicesApi == null) {
 			this.servicesApi= new PagerDutyServicesAPI(this);
