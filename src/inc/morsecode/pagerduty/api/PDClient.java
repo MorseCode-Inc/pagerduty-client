@@ -276,7 +276,9 @@ public class PDClient {
 							json= JsonParser.parse(string);
 						} else {
 							System.err.println("Client Error, Malformed JSON Response from PagerDuty server: "+ mfx.getMessage());
-							System.err.println(string);
+							if (debugging) {
+								System.err.println(string);
+							}
 							// throw new RuntimeException("Client Error, Malformed JSON Response from server: "+ mfx.getMessage() +"\n"+ string);
 							throw mfx;
 						}
