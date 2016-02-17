@@ -233,9 +233,11 @@ public class PDClient {
 		}
 		
 		System.out.println("HTTPClient\t"+ request.getRequestLine());
+		/*
 		for (Header header : request.getAllHeaders()) {
-			System.out.println("HTTPClient\t"+ header);
+			// System.out.println("HTTPClient\t"+ header);
 		}
+		*/
 		
 		// send it
 		HttpResponse response= execute((HttpUriRequest)request);

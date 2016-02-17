@@ -302,6 +302,7 @@ public class PagerDutyIncidentsAPI {
 	
 
 
+	/*
 	public static JsonObject buildPdTrigger(String serviceKey, UIMAlarmMessage alarm, JsonArray contexts) {
 		JsonObject json= new JsonObject();
 		
@@ -333,6 +334,7 @@ public class PagerDutyIncidentsAPI {
 		}
 		return json;
 	}
+	*/
 	
 
 	public JsonObject fire(PDTriggerEvent event) throws IOException, MalformedJsonException {
