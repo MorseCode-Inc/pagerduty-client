@@ -6,13 +6,13 @@ import inc.morsecode.nas.UIMAlarmMessage;
 import inc.morsecode.pagerduty.data.PDIncident;
 import inc.morsecode.pagerduty.data.PDTriggerEvent;
 import inc.morsecode.pagerduty.data.PDUser;
+import inc.morsecode.util.json.JsonArray;
+import inc.morsecode.util.json.JsonObject;
+import inc.morsecode.util.json.JsonValue;
 
 import java.io.IOException;
 import java.util.List;
 
-import util.json.JsonArray;
-import util.json.JsonObject;
-import util.json.JsonValue;
 import util.json.ex.MalformedJsonException;
 
 /**
@@ -125,7 +125,7 @@ public class PagerDutyIncidentsAPI {
 		params.set("offset", offset);
 		params.set("limit", limit);
 		
-		JsonObject data= client.call(GET, "/api/v1/incidents", null, params);
+		JsonObject data= client.call(GET, "/api/"+ "v1" +"/incidents", null, params);
 		
 		JsonArray array= (JsonArray)data.get("services", new JsonArray());
 		ListResult<PDIncident> incidents= new ListResult<PDIncident>(data.get("total", 0));
@@ -142,7 +142,7 @@ public class PagerDutyIncidentsAPI {
 	
 
 	public IncidentList getIncidents(NDS filter) throws IOException, MalformedJsonException {
-		String uri = "/api/v1/incidents";
+		String uri = "/api/"+ "v1" +"/incidents";
 		
 		NDS params= new NDS("params");
 		
@@ -204,52 +204,10 @@ public class PagerDutyIncidentsAPI {
 		// https://developer.pagerduty.com/documentation/rest/incidents/show
 		// resource URL:
 		// GET https://<subdomain>.pagerduty.com/api/v1/incidents/:id
-		String uri = "/api/v1/incidents";
+		String uri = "/api/"+ "v1" +"/incidents";
 		
 		JsonObject data= client.call(GET, uri+ "/"+ id, null, null);
 		
-		/*
-		 * BCM: Nate, below you had this line of code:
-		 * PDIncident incident= new PDIncident(data.getObject(id));
-		 * 
-		 * the data structure returned from pagerduty looks like this:
-		 * 
-		 * {
-				  "id": "PIJ90N7",
-				  "incident_number": 1,
-				  "created_on": "2012-12-22T00:35:21Z",
-				  "status": "triggered",
-				  "pending_actions": [ 
-				  	{ "type": "escalate", "at": "2014-01-01T08:00:00Z" },
-				    { "type": "unacknowledge", "at": "2014-01-01T08:00:00Z" },
-				    { "type": "resolve", "at": "2014-01-01T08:00:00Z" }
-				  ],
-				  "html_url": "https://acme.pagerduty.com/incidents/PIJ90N7",
-				  "incident_key": null,
-				  "service": { "id": "PBAZLIU", "name": "service", "html_url": "https://acme.pagerduty.com/services/PBAZLIU" },
-				  "assigned_to_user": {  "id": "PPI9KUT", "name": "Alan Kay", "email": "alan@pagerduty.com", "html_url": "https://acme.pagerduty.com/users/PPI9KUT" },
-				  
-				  JsonData data= {}
-				  PDUser assignedTo= new PDUser(data.getObject("assigned_to_user"));
-				  
-				  String username= assignedTo.getUserName();
-				  String username= assignedTo.get("name");
-				  JsonObject json= assignedTo.toJson();
-				  
-				  "assigned_to": [
-				    { 
-				      "at": "2012-12-22T00:35:21Z",
-				      "object": { "id": "PPI9KUT", "name": "Alan Kay", "email": "alan@pagerduty.com", "html_url": "https://acme.pagerduty.com/users/PPI9KUT", "type": "user" }
-				    }
-				  ],
-				  "trigger_summary_data": { "subject": "45645" },
-				  "trigger_details_html_url": "https://acme.pagerduty.com/incidents/PIJ90N7/log_entries/PIJ90N7",
-				  "last_status_change_on": "2012-12-22T00:35:22Z",
-				  "last_status_change_by": null
-				}
-		 */
-		// PDIncident incident= new PDIncident(data.getObject(id));
-		// the JSON that is in the data variable represents a single incident
 		PDIncident incident= new PDIncident(data);
 		
 		return incident;
@@ -262,7 +220,7 @@ public class PagerDutyIncidentsAPI {
 		// https://developer.pagerduty.com/documentation/rest/incidents/count
 		// resource URL:
 		// GET https://<subdomain>.pagerduty.com/api/v1/incidents/count
-		String uri = "/api/v1/incidents";
+		String uri = "/api/"+ "v1" +"/incidents";
 		
 		JsonObject data= client.call(GET, uri+ "/count", null, null);
 		

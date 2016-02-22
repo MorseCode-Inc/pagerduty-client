@@ -8,10 +8,10 @@ package inc.morsecode.pagerduty.data;
  * https://developer.pagerduty.com/documentation/integration/events/trigger
  */
 
-import util.json.JsonArray;
-import util.json.JsonObject;
 import inc.morsecode.NDS;
 import inc.morsecode.pagerduty.PDConstants.EventType;
+import inc.morsecode.util.json.JsonArray;
+import inc.morsecode.util.json.JsonObject;
 
 /**
  * 

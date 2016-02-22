@@ -8,10 +8,10 @@ package inc.morsecode.pagerduty.api;
  * https://developer.pagerduty.com/documentation/integration/events/trigger
  */
 
-import util.json.JsonObject;
 import inc.morsecode.NDS;
 import inc.morsecode.pagerduty.PDConstants;
 import inc.morsecode.pagerduty.PDConstants.ContextType;
+import inc.morsecode.util.json.JsonObject;
 
 public class PDContext extends NDS {
 	

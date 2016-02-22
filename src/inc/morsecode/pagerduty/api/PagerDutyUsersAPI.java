@@ -4,6 +4,9 @@ import inc.morsecode.NDS;
 import inc.morsecode.core.ListResult;
 import inc.morsecode.nas.UIMAlarmMessage;
 import inc.morsecode.pagerduty.data.PDUser;
+import inc.morsecode.util.json.JsonArray;
+import inc.morsecode.util.json.JsonObject;
+import inc.morsecode.util.json.JsonValue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,9 +17,6 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 
-import util.json.JsonArray;
-import util.json.JsonObject;
-import util.json.JsonValue;
 import util.json.ex.MalformedJsonException;
 
 public class PagerDutyUsersAPI {

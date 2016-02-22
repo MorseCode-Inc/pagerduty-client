@@ -1,12 +1,7 @@
 package inc.morsecode.pagerduty;
 
-import java.util.Map;
-
-import util.json.JsonObject;
-
-import inc.morsecode.NDS;
-import inc.morsecode.pagerduty.PDConstants.EventType;
 import inc.morsecode.pagerduty.data.PDService;
+import inc.morsecode.util.json.JsonObject;
 
 public class PDAckEvent {
 	
@@ -30,6 +25,8 @@ public class PDAckEvent {
 	public JsonObject toJson() {
 		JsonObject json= service.toJson();
 		
+		json.set("incident_key", incidentKey);
+		json.set("description", description);
 		json.set("details", details);
 		
 		return json;

@@ -2,8 +2,8 @@ package inc.morsecode.pagerduty.data;
 
 import java.util.Map;
 
-import util.json.JsonObject;
 import inc.morsecode.NDS;
+import inc.morsecode.util.json.JsonObject;
 
 /**
  * 

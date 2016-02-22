@@ -12,6 +12,7 @@ import java.util.StringTokenizer;
 import inc.morsecode.NDS;
 import inc.morsecode.etc.ArrayUtils;
 import inc.morsecode.pagerduty.PDException;
+import inc.morsecode.util.json.JsonObject;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -28,14 +29,37 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 
-import util.json.JsonObject;
 import util.json.ex.MalformedJsonException;
 import util.kits.JsonParser;
 
 
 public class PDClient {
 
-	private NDS data= new NDS("pagerduty_client");
+	private static final String UTF_8 = "UTF-8";
+	
+	private static final String HTTP_PUT = "put";
+	private static final String HTTP_DELETE = "delete";
+	private static final String HTTP_POST = "post";
+	private static final String HTTP_GET = "get";
+	private static final String HTTP_HDR_CONTENT_TYPE = "Content-Type";
+	private static final String HTTP_HDR_AUTHORIZATION = "Authorization";
+	
+	private static final String KEY_STATUS = "status";
+	private static final String KEY_ERROR = "error";
+	private static final String KEY_CODE = "code";
+	private static final String KEY_MESSAGE = "message";
+	private static final String KEY_TOKEN = "token";
+	private static final String KEY_NAME = "name";
+	private static final String KEY_AUTH_USER_ID = "auth/user_id";
+	private static final String KEY_AUTH_API_KEY = "auth/api_key";
+	private static final String KEY_DOMAIN = "domain";
+	private static final String KEY_SUBDOMAIN = "subdomain";
+	private static final String KEY_SERVICES = "services";
+	
+	private static final String PAGERDUTY_TLD = "pagerduty.com";
+	private static final String DEFAULT_SUBDOMAIN = "events";
+	
+	private NDS data= new NDS(PDClient.class.getSimpleName());
 	private NDS services;
 	private HttpClient restlet;
 	
@@ -46,16 +70,16 @@ public class PDClient {
 	private boolean debugging= false;
 	
 	public PDClient(String subdomain, String apiKey, PDEndpoints urls, String userid) {
-		this(subdomain, "pagerduty.com", apiKey, urls, userid);
+		this(subdomain, PAGERDUTY_TLD, apiKey, urls, userid);
 	}
 	
 	public PDClient(String subdomain, String domain, String apiKey, PDEndpoints urls, String userid) {
-		this.services= data.seek("services", true);
+		this.services= data.seek(KEY_SERVICES, true);
 		this.urls= urls;
-		data.set("subdomain", subdomain);
-		data.set("domain", domain);
-		data.set("auth/api_key", apiKey);
-		data.set("auth/user_id", userid);
+		data.set(KEY_SUBDOMAIN, subdomain);
+		data.set(KEY_DOMAIN, domain);
+		data.set(KEY_AUTH_API_KEY, apiKey);
+		data.set(KEY_AUTH_USER_ID, userid);
 		
 		this.restlet= HttpClients.createDefault();
 		
@@ -65,14 +89,14 @@ public class PDClient {
 		return urls;
 	}
 	
-	public String getSubdomain() { return data.get("subdomain", "events"); }
+	public String getSubdomain() { return data.get(KEY_SUBDOMAIN, DEFAULT_SUBDOMAIN); }
 	
-	public String getUserid() { return data.get("auth/user_id");  }
+	public String getUserid() { return data.get(KEY_AUTH_USER_ID);  }
 	
 	public String getDomain() { return getSubdomain() +"."+ getTopLevelDomain(); }
 	
 	public String getTopLevelDomain() {
-		return data.get("domain", "pagerduty.com");
+		return data.get(KEY_DOMAIN, PAGERDUTY_TLD);
 	}
 	
 	public String getBaseUrl(String protocol, String apiVer) {
@@ -80,37 +104,37 @@ public class PDClient {
 	}
 	
 	public String getApiToken() {
-		return data.get("auth/api_key", (String)null);
+		return data.get(KEY_AUTH_API_KEY, (String)null);
 	}
 	
 	public void addService(String name, String token) {
 		NDS service= services.seek(name, true);
-		service.set("name", name);
-		service.set("token", token);
+		service.set(KEY_NAME, name);
+		service.set(KEY_TOKEN, token);
 	}
 	
 	public String getServiceToken(String name) {
-		return services.get(name +"/token", (String) null);
+		return services.get(name +"/"+ KEY_TOKEN, (String) null);
 	}
 	
     public HttpGet get(String uri, NDS params, boolean auth) {
-    	return (HttpGet)this.http("get", uri, null, params, auth);
+    	return (HttpGet)this.http(HTTP_GET, uri, null, params, auth);
     }
 	
     public HttpRequest buildPostRequest(String uri, JsonObject data, NDS params, boolean auth) {
-    	return this.http("post", uri, data, params, auth);
+    	return this.http(HTTP_POST, uri, data, params, auth);
     }
     
     public HttpRequest delete(String uri, JsonObject data, NDS params, boolean auth) {
-    	return this.http("delete", uri, data, params, auth);
+    	return this.http(HTTP_DELETE, uri, data, params, auth);
     }
 
     public HttpRequest put(String uri, JsonObject data, NDS params, boolean auth) {
-    	return this.http("put", uri, data, params, auth);
+    	return this.http(HTTP_PUT, uri, data, params, auth);
     }
     
     public HttpRequest post(String uri, JsonObject data, NDS params, boolean auth) {
-    	return this.http("post", uri, data, params, auth);
+    	return this.http(HTTP_POST, uri, data, params, auth);
     }
     
     
@@ -133,7 +157,7 @@ public class PDClient {
     			try {
 					String string = params.get(key);
 					if ("".equals(string) || null == string) { continue; }
-					uri+= delim + URLEncoder.encode(key, "UTF-8") +"="+ URLEncoder.encode(string, "UTF-8");
+					uri+= delim + URLEncoder.encode(key, UTF_8) +"="+ URLEncoder.encode(string, UTF_8);
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				}
@@ -143,32 +167,32 @@ public class PDClient {
     	}
 		HttpEntity entity= null;
     	
-    	if ("get".equalsIgnoreCase(method)) {
+    	if (HTTP_GET.equalsIgnoreCase(method)) {
     		request= new HttpGet(uri);
-    		HttpGet getUrl= (HttpGet)request;
+    		// HttpGet getUrl= (HttpGet)request;
     		
     		// System.err.println("uri: "+ uri);
     		// System.err.println("URL: "+ ((HttpUriRequest) getUrl).getURI());
     		
-    	} else if ("delete".equalsIgnoreCase(method)) {
+    	} else if (HTTP_DELETE.equalsIgnoreCase(method)) {
     		request= new HttpDelete(uri);
     	
     	} else {
 			entity= entity(data);
 			
-			if ("put".equalsIgnoreCase(method)) {
+			if (HTTP_PUT.equalsIgnoreCase(method)) {
 			
 				request= new HttpPut(uri);
 				if (data != null) {
 					((HttpPut)request).setEntity(entity);
-					request.setHeader("Content-Type", ContentType.APPLICATION_JSON.getMimeType());
+					request.setHeader(HTTP_HDR_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
 				}
 			
-			} else if ("post".equalsIgnoreCase(method)) {
+			} else if (HTTP_POST.equalsIgnoreCase(method)) {
 				request= new HttpPost(uri);
 				if (data != null) {
 					((HttpPost)request).setEntity(entity);
-					request.setHeader("Content-Type", ContentType.APPLICATION_JSON.getMimeType());
+					request.setHeader(HTTP_HDR_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
 				}
 			} else {
 				throw new RuntimeException("Unsupported HTTP Method: "+ method +" "+ uri);
@@ -176,7 +200,7 @@ public class PDClient {
 		}
     	
     	if (auth) {
-    		request.setHeader("Authorization", "Token token="+ getApiToken());
+    		request.setHeader(HTTP_HDR_AUTHORIZATION, "Token token="+ getApiToken());
     	}
 		
     	return request;
@@ -215,17 +239,18 @@ public class PDClient {
 	public JsonObject call(String httpMethod, String uri, JsonObject data, NDS params) throws IOException, MalformedJsonException {
 		return call(httpMethod, uri, data, params, true);
 	}
+	
 	public JsonObject call(String httpMethod, String uri, JsonObject data, NDS params, boolean auth) throws IOException, MalformedJsonException {
 		
 		HttpRequest request= null;
 		
-		if ("put".equalsIgnoreCase(httpMethod)) {
+		if (HTTP_PUT.equalsIgnoreCase(httpMethod)) {
 			request= put(uri, data, params, auth);
-		} else if ("get".equalsIgnoreCase(httpMethod)) {
+		} else if (HTTP_GET.equalsIgnoreCase(httpMethod)) {
 			request= get(uri, params, auth);
-		} else if ("delete".equalsIgnoreCase(httpMethod)) {
+		} else if (HTTP_DELETE.equalsIgnoreCase(httpMethod)) {
 			request= delete(uri, data, params, auth);
-		} else if ("post".equalsIgnoreCase(httpMethod)) {
+		} else if (HTTP_POST.equalsIgnoreCase(httpMethod)) {
 			request= post(uri, data, params, auth);
 		} else {
 			// unsupported method
@@ -233,11 +258,6 @@ public class PDClient {
 		}
 		
 		System.out.println("HTTPClient\t"+ request.getRequestLine());
-		/*
-		for (Header header : request.getAllHeaders()) {
-			// System.out.println("HTTPClient\t"+ header);
-		}
-		*/
 		
 		// send it
 		HttpResponse response= execute((HttpUriRequest)request);
@@ -257,8 +277,8 @@ public class PDClient {
 				if ("".equals(string)) {
 					JsonObject json= new JsonObject();
 					
-					json.set("status", code);
-					json.set("message", message);
+					json.set(KEY_STATUS, code);
+					json.set(KEY_MESSAGE, message);
 					
 					return json;
 					
@@ -286,33 +306,17 @@ public class PDClient {
 						}
 					}
 					
-					/*
-					 * HTTPClient	GET https://morsecode-incorporated.pagerduty.com/api/v1/incidents/1 HTTP/1.1
-						HTTPClient	Authorization: Token token=PnKQyzNjQEjsRfodeTwa
-						Incident ID: 1
-						Incident Service Information:
-						<service>
-						</service>
-						
-						Incident JSON:
-						{
-		 					"error":{
-		 						"message":"Your account is expired and cannot use the API."
-		 						, "code":2012
-		 					}
-						}
-					 */
 					
 					if (json == null) {
-						throw new RuntimeException("Client Error, Malformed JSON Response from: "+ request +"");
+						throw new RuntimeException("Client Error, Malformed JSON Response, 'null' from: "+ request +"");
 					}
 					
-					JsonObject error= json.getObject("error", null);
+					JsonObject error= json.getObject(KEY_ERROR, null);
 					
 					if (error != null) {
 						// there is an error object in the response data
-						int errorCode= error.get("code", 0);
-						String errorMessage= error.get("message", "no message");
+						int errorCode= error.get(KEY_CODE, 0);
+						String errorMessage= error.get(KEY_MESSAGE, "no message");
 						
 						switch (errorCode) {
 						case 0:
@@ -341,12 +345,11 @@ public class PDClient {
 		return null;
 	}
 
-	public String read(HttpEntity entity) throws IOException {
+	protected String read(HttpEntity entity) throws IOException {
 		ByteArrayOutputStream baos= new ByteArrayOutputStream();
 		
 		byte[] buffer= new byte[2048];
 		
-		//entity.writeTo(baos);
 		InputStream content = entity.getContent();
 		while (content.available() > 0) {
 			int k= content.read(buffer);
